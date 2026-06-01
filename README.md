@@ -4,10 +4,10 @@ This repository contain all the files that have been used for the POLYFEM projec
 
 Here is a manual that explain where all files used for the analyss can be found. The repository is divided into 3 subfolders:
 
-Data: contains the reference genetic data used during the analysis, given by the NCBI database for P_Muralis. Contains also the file (Pheno.xlsx) with all he pheotypic data measured from the femle lizards. The sequence data are not given.
+  -  data: contains the reference genetic data used during the analysis, given by the NCBI database for P_Muralis. Contains also the file (Pheno.xlsx) with all he pheotypic data measured from the femle lizards. The sequence data are not given.
 
-Scripts: contains the script used for the analysis.
+  -  scripts: contains the script used for the analysis.
 
-Figures: contains figure pdf of the report
+  -  figures: contains figure pdf of the report
 
-Annexes: contains annex pdf of the report
+  -  annexes: contains annex pdf of the report
