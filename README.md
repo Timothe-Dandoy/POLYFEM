@@ -8,6 +8,6 @@ Data: contains the reference genetic data used during the analysis, given by the
 
 Scripts: contains the script used for the analysis.
 
-Figure: contains figure pdf of the report
+Figures: contains figure pdf of the report
 
 Annexes: contains annex pdf of the report
