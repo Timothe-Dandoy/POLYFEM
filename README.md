@@ -1,5 +1,10 @@
 # POLYFEM
 
-## Test 
+This repository contain all the files that have been used for the POLYFEM project of Timothé Dandoy, during its internship at the Centre d'Ecologie Fonctionelle et Evolutive in Montpellier, named : Genetic basis differences between continuous phenotypic variation and discrete polymorphism: the example of dorsal colour variation in Iberian wall lizards 
 
-### Test
+Here is a manual that explain where all files used for the analyss can be found. The repository is divided into 3 subfolders:
+
+Data: contains the reference genetic data used during the analysis, given by the NCBI database for P_Muralis. Contains also the file (Pheno.xlsx) with all he pheotypic data measured from the femle lizards. The sequence data are not given
+Scripts: contains the script used for the analysis
+Figure: Figure pdf of the report
+Annexes: Annex pdf of the report
