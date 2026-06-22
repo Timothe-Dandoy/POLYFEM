@@ -338,8 +338,8 @@ count_pheno <- function(Phenotype_clean,pheno){
 ## Parameters
 
 ```{r}
-input_folder  = "C:/Users/tdy69/Documents/Stages/POLYFEM/Projet/data/"
-output_folder = "C:/Users/tdy69/Documents/Stages/POLYFEM/Projet/done/Stats_Pheno/final/"
+input_folder  = "../data/"
+output_folder = "../results/PCA"
 
 
 Colour_species_all = c(
@@ -393,7 +393,7 @@ limit_mod = 10
 
 ```{r}
 # Reading the excel file
-Phenotype = read_xlsx(paste0(input_folder,"Pheno_english.xlsx"))
+Phenotype = read_xlsx(paste0(input_folder,"Pheno.xlsx"))
 
 #Phenotype = Phenotype[Phenotype$`genetic data` =="Y",]
 
