@@ -8,10 +8,10 @@ Here is a manual that explain where all files used for the analyses can be found
 
   -  scripts: contains the scripts used for the analysis.
 
-  -  tmp: contains the temporary files produced during the analysis
+  -  tmp: contains the temporary files produced during the analysis. Can be filled by launching the scripts.
 
-  -  results: contains the outputs produced during the analysis
+  -  results: contains the outputs produced during the analysis. Can be filled by launching the scripts.
 
-  -  figures: contains the figures found in the report
+  -  figures: contains the figures found in the report.
 
-  -  annexes: contains the annexes found in the report
+  -  annexes: contains the annexes found in the report.
