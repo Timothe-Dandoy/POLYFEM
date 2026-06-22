@@ -8,6 +8,6 @@ Here is a manual that explain where all files used for the analyses can be found
 
   -  scripts: contains the scrips used for the analysis.
 
-  -  figures: contains figure pdf found in the report
+  -  figures: contains the figures found in the report
 
-  -  annexes: contains annex pdf found in the report
+  -  annexes: contains the annexes found in the report
