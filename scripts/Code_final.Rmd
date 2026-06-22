@@ -1,0 +1,735 @@
+# Packages
+
+```{r}
+library("readxl")
+library("knitr") 
+library("ggplot2") 
+library("FactoMineR") 
+library("factoextra")
+library("ggrepel")
+library("multimode")
+library("rebmix")
+library("performance")
+library("gt")
+library("webshot2")
+```
+
+# Functions
+
+```{r}
+variable_PCA <- function(species,resPCA){
+  # build the PCA with variable correlations of the given species
+  plot <- fviz_pca_var(
+    resPCA, 
+    geom = c("text","arrow"), 
+    col.var = "cos2", axes=1:2
+    ) + 
+    ggtitle(species)+
+    theme_classic()+
+    theme(
+    plot.title = element_text(size = 16),      
+    axis.title = element_text(size = 14),      
+    legend.title = element_text(size = 16),    
+    legend.text = element_text(size = 14)     
+  )
+  
+  print (plot)
+  
+  ggsave(
+    filename = paste0(output_folder,species,"_ACP_1x2_variables.png"),
+    plot = plot,
+    width = 8,
+    height = 6,
+    dpi = 300)
+}
+
+
+individual_PCA <- function(species,resPCA,df_pheno){
+  # build the PCA with individual names, colored and shaped by morphs, of the given species
+  fviz_pca_ind(
+    resPCA,
+    axes = 1:2,
+    geom.ind = "point",
+    label = "none",
+    col.ind = df_pheno$Phenotype,
+    shape.ind = df_pheno$Phenotype,
+    pointsize = 3,
+    addEllipses = FALSE,
+    repel = TRUE
+  ) +
+    geom_text(
+      aes(label = df_pheno$Sample_ID),
+      vjust = -0.7,
+      size = 3
+    ) +
+    scale_color_manual(values = Colour_pheno)+
+    scale_shape_manual(values = Shape_pheno) +
+    labs(color = "Phenotype", shape = "Phenotype")+
+    ggtitle(species)+
+    theme_classic()+
+    theme(
+    plot.title = element_text(size = 16),      
+    axis.title = element_text(size = 14),      
+    legend.title = element_text(size = 16),    
+    legend.text = element_text(size = 14) 
+    )
+}
+
+
+phenotype_PCA <- function(species,resPCA,df_pheno){
+  # build the PCA with individuals colored and shaped by morph, showing the confident ellipses, of the given species
+  plot <- fviz_pca_ind(
+    resPCA,
+    axes = 1:2,
+    geom.ind = "point",
+    col.ind = df_pheno$Phenotype,
+    shape.ind = df_pheno$Phenotype,
+    pointsize = 3,
+    addEllipses = length(unique(df_pheno$Phenotype)) > 1,
+    repel = TRUE
+  ) + 
+    scale_color_manual(values = Colour_pheno) +
+    scale_fill_manual(values = Colour_pheno) +
+    scale_shape_manual(values = Shape_pheno) +
+    labs(color = "Phenotype", shape = "Phenotype", fill = "Phenotype")+
+    ggtitle(species)+
+    theme_classic()+
+    theme(
+    plot.title = element_text(size = 16),      
+    axis.title = element_text(size = 14),      
+    legend.title = element_text(size = 16),    
+    legend.text = element_text(size = 14)     
+  )
+  
+  print (plot)
+  
+  ggsave(
+    filename = paste0(output_folder,species,"_ACP_1x2_phenotype.png"),
+    plot = plot,
+    width = 8,
+    height = 6,
+    dpi = 300)
+}
+
+
+extreme_phenotype_PCA <- function(species,resPCA,df_pheno){
+  # build the PCA with individuals colored and shaped by extreme morph or intermediate, showing the confident ellipses, of the given species
+  plot <- fviz_pca_ind(
+    resPCA,
+    axes = 1:2,
+    geom.ind = "point",
+    col.ind = df_pheno$'Extreme Phenotype',
+    shape.ind = df_pheno$'Extreme Phenotype',
+    pointsize = 3,
+    addEllipses = length(unique(df_pheno$'Extreme Phenotype')) > 1,
+    repel = TRUE
+  ) + 
+    scale_color_manual(values = Colour_extreme_pheno) +
+    scale_fill_manual(values = Colour_extreme_pheno) +
+    scale_shape_manual(values = Shape_extreme_pheno) +
+    labs(color = "Phenotype", shape = "Phenotype", fill = "Phenotype")+
+    ggtitle(species)+
+    theme_classic()+
+    theme(
+    plot.title = element_text(size = 16),      
+    axis.title = element_text(size = 14),      
+    legend.title = element_text(size = 16),    
+    legend.text = element_text(size = 14)     
+  )
+  
+  print (plot)
+  
+  ggsave(
+    filename = paste0(output_folder,species,"_ACP_1x2_extreme_phenotype.png"),
+    plot = plot,
+    width = 8,
+    height = 6,
+    dpi = 300)
+}
+
+
+species_PCA <- function(species,resPCA,df_pheno){
+  #build the PCA of all species with individuals colored by species, showing or not the confident ellipse
+  plot_no_ellipse <- fviz_pca_ind(
+  resPCA,
+  axes = 1:2,
+  geom.ind = "point",
+  col.ind = df_pheno$Species,
+  pointshape = 16,
+  pointsize = 3,
+  addEllipses = FALSE,
+  repel = TRUE,
+) + 
+  scale_color_manual(values = Colour_species)+
+  labs(color = "Species")+
+  ggtitle(species)+
+  theme_classic()+
+  theme(
+    plot.title = element_text(size = 16),      
+    axis.title = element_text(size = 14),      
+    legend.title = element_text(size = 16),    
+    legend.text = element_text(size = 14)     
+  )
+  
+  plot_ellipse <- fviz_pca_ind(
+    resPCA,
+    axes = 1:2,
+    geom.ind = "none",
+    col.ind = df_pheno$Species,
+    pointsize = 3,
+    addEllipses = TRUE,
+    repel = TRUE
+  ) + 
+    scale_color_manual(values = Colour_species) +
+    scale_fill_manual(values = Colour_species) +
+    labs(color = "Species", fill = "Species")+
+    ggtitle(species)+
+    theme_classic()+
+    theme(
+    plot.title = element_text(size = 16),      
+    axis.title = element_text(size = 14),      
+    legend.title = element_text(size = 16),    
+    legend.text = element_text(size = 14)     
+  )
+  
+  print (plot_no_ellipse)
+  print (plot_ellipse)
+  
+  ggsave(
+    filename = paste0(output_folder,species,"_ACP_1x2_species.png"),
+    plot = plot_no_ellipse,
+    width = 8,
+    height = 6,
+    dpi = 300)
+  
+  ggsave(
+    filename = paste0(output_folder,species,"_ACP_1x2_species_ellipse.png"),
+    plot = plot_ellipse,
+    width = 8,
+    height = 6,
+    dpi = 300)
+}
+
+
+histogram_axe1 <- function(name,coord){
+  # build the histogram distribution of individuals along dimension 1 of the PCA in the given species
+  df <- data.frame(x = coord)
+  p <- ggplot(df, aes(x = x)) +
+    geom_histogram(
+      bins = 20,
+      fill = Colour_species_all[[name]],
+      color = "black"
+    ) +
+    labs(title = name, x = "Dim 1", y = "Count") +
+    theme_classic()+
+    theme(
+    plot.title = element_text(size = 16),      
+    axis.title = element_text(size = 14),      
+    legend.title = element_text(size = 16),    
+    legend.text = element_text(size = 14)     
+  )
+
+  print(p)
+
+  ggsave(
+    filename = paste0(output_folder, name, "_histo_dim1.png"),
+    plot = p,
+    width = 8,
+    height = 6,
+    dpi = 300
+  )
+}
+
+
+mod_multimod <- function(limit_pval,coord){
+  #found the modality of the distribution along coord, using the package multimode, in the given species
+  verif = FALSE
+  mod = 1
+  while (isFALSE(verif) & mod < limit_mod){       # we augment the number of modalities considered until the test is false
+    test = modetest(coord, mod0 = mod, method = "FM")
+    print (test)
+    if (test$p.value < limit_pval){
+      mod = mod + 1
+    } else {verif = TRUE}
+  }
+  return (mod)
+}
+
+
+mod_rebmix <- function(species,coord,resPCA,Phenotype_clean){
+  #found the modality of the distribution along coord, using the package rebmix. We show the individual clusters on the PCA in the given species
+  df_coord <- data.frame(x1 = coord)
+  
+  rebmix_coord <- REBMIX(model = "REBMVNORM",
+         Dataset = list(df_coord),
+         Preprocessing = "k-nearest neighbour",
+         Criterion = "BIC",
+         EMcontrol = EM)
+  
+  clustering <- RCLRMIX(model = "RCLRMVNORM",x = rebmix_coord)
+  labels    <- clustering@Zp
+
+  df_result <- data.frame(
+    ID        = Phenotype_clean$Sample_ID,
+    Species   = Phenotype_clean$Species,
+    coord_ax1 = coord,
+    cluster   = as.factor(labels),
+    Pheno     = Phenotype_clean$Phenotype
+  )
+  
+  Phenotype_clean$REBMIX_cluster = as.factor(labels)
+  
+  plot <- fviz_pca_ind(
+    resPCA,
+    axes = 1:2,
+    geom.ind = "point",
+    habillage = Phenotype_clean$REBMIX_cluster,
+    pointshape = 16,
+    pointsize = 3,
+    addEllipses = FALSE,
+    mean.point = FALSE,
+    repel = TRUE,
+    title = species
+  ) + 
+    theme_classic()+
+    theme(
+    plot.title = element_text(size = 16),      
+    axis.title = element_text(size = 14),      
+    legend.title = element_text(size = 16),    
+    legend.text = element_text(size = 14)     
+  )
+  
+  print(df_result)
+  print(plot)
+
+  ggsave(
+    filename = paste0(output_folder,species,"_ACP_1x2_cluster_REBMIX.png"),
+    plot = plot,
+    width = 8,
+    height = 6,
+    dpi = 300)
+  
+  return(rebmix_coord@summary$c)
+}
+
+
+mod_performance <- function(coord){
+  #Test the unimodality of the distribution along coord, using performance
+  print(check_multimodal(coord))
+}
+
+
+read_dimension <- function(resPCA,dim){
+  # return the percentage of variance explained by the dimension dim in the given PCA
+  dimensions <- get_eigenvalue(resPCA)
+  return(dimensions[dim,2])
+}
+
+
+count_pheno <- function(Phenotype_clean,pheno){
+  # Return the number of individuals exhibiting the phenotype pheno in the given species
+  return (sum(Phenotype_clean$Phenotype == pheno))
+}
+
+```
+
+# Data Collecting
+
+## Parameters
+
+```{r}
+input_folder  = "C:/Users/tdy69/Documents/Stages/POLYFEM/Projet/data/"
+output_folder = "C:/Users/tdy69/Documents/Stages/POLYFEM/Projet/done/Stats_Pheno/final/"
+
+
+Colour_species_all = c(
+    "ALL" = "grey80",
+    "GUA" = "darkblue",
+    "LUS" = "gold",
+    "BOC" = "green4",
+    "LIO" = "orange",
+    "VIR" = "lightblue1",
+    "VAU" = "lightpink",
+    "CAR" = "chocolate4",
+    "HIS" = "purple")
+
+Colour_species = c(
+    "P_guadarramae" = "darkblue",
+    "P_lusitanicus" = "gold",
+    "P_bocagei" = "green4",
+    "P_liolepis" = "orange",
+    "P_virescens" = "lightblue1",
+    "P_vaucheri" = "lightpink",
+    "P_carbonelli" = "chocolate4",
+    "P_hispanicus" = "purple")
+
+Colour_pheno = c(
+  "S" = "red3",
+  "RB" = "green3"
+)
+
+Colour_extreme_pheno = c(
+  "S" = "red3",
+  "RB" = "green3",
+  "I" = "lightblue2"
+)
+
+Shape_pheno = c(
+  "S" = 17, 
+  "RB" = 16  
+)
+
+Shape_extreme_pheno = c(
+  "S" = 17, 
+  "RB" = 16,
+  "I" = 15
+)
+
+limit_pval_multimode = 0.01
+limit_mod = 10
+```
+
+## Phenotype data
+
+```{r}
+# Reading the excel file
+Phenotype = read_xlsx(paste0(input_folder,"Pheno_english.xlsx"))
+
+#Phenotype = Phenotype[Phenotype$`genetic data` =="Y",]
+
+Phenotype$`F - spot`            <- as.numeric(Phenotype$`F - spot`)
+Phenotype$`DL - width`          <- as.numeric(Phenotype$`DL - width`)
+Phenotype$`DL - discontinuity`  <- as.numeric(Phenotype$`DL - discontinuity`)
+Phenotype$`SDS - width`         <- as.numeric(Phenotype$`SDS - width`)
+Phenotype$`SDS - discontinuity` <- as.numeric(Phenotype$`SDS - discontinuity`)
+Phenotype$`SDS - spot`          <- as.numeric(Phenotype$`SDS - spot`)
+
+Phenotype$`LF - white line` <- ifelse(Phenotype$`LF - white line` == "C", 0,
+                                  ifelse(Phenotype$`LF - white line` == "D", 1, NA))
+
+Phenotype$`SDS - regular border` <- ifelse(Phenotype$`SDS - regular border` == "Y", 0,
+                                  ifelse(Phenotype$`SDS - regular border` == "N", 1, NA))
+
+Phenotype$`SDS - isolated white scales` <- ifelse(Phenotype$`SDS - isolated white scales` == "N", 0,ifelse(Phenotype$`SDS - isolated white scales` == "Y", 1, NA))
+
+Var_ACP <- c("LF - white line","SDS - regular border","SDS - isolated white scales","F - spot",
+             "DL - width","DL - discontinuity","SDS - width","SDS - discontinuity", "SDS - spot")
+
+# Keep only individuals with data in every phenotypic variable
+Phenotype_clean_all <- Phenotype[complete.cases(Phenotype[,Var_ACP]), ]
+
+Phenotype_clean_gua <- Phenotype_clean_all[Phenotype_clean_all$Species == "P_guadarramae",]
+Phenotype_clean_lus <- Phenotype_clean_all[Phenotype_clean_all$Species == "P_lusitanicus",]
+Phenotype_clean_boc <- Phenotype_clean_all[Phenotype_clean_all$Species == "P_bocagei",]
+Phenotype_clean_lio <- Phenotype_clean_all[Phenotype_clean_all$Species == "P_liolepis",]
+Phenotype_clean_his <- Phenotype_clean_all[Phenotype_clean_all$Species == "P_hispanicus",]
+Phenotype_clean_vir <- Phenotype_clean_all[Phenotype_clean_all$Species == "P_virescens",]
+Phenotype_clean_vau <- Phenotype_clean_all[Phenotype_clean_all$Species == "P_vaucheri",]
+Phenotype_clean_car <- Phenotype_clean_all[Phenotype_clean_all$Species == "P_carbonelli",]
+
+# Phenotype_clean_boc <- Phenotype_clean_boc[Phenotype_clean_boc$Sample_ID != "T13969", ]
+
+```
+
+# ACP
+
+## Computations
+
+```{r}
+# Compute the PCA
+resPCA_all <- PCA(Phenotype_clean_all[,Var_ACP], scale.unit = TRUE, ncp = 5, graph = FALSE)
+resPCA_gua <- PCA(Phenotype_clean_gua[,Var_ACP], scale.unit = TRUE, ncp = 5, graph = FALSE)
+resPCA_lus <- PCA(Phenotype_clean_lus[,Var_ACP], scale.unit = TRUE, ncp = 5, graph = FALSE)
+resPCA_boc <- PCA(Phenotype_clean_boc[,Var_ACP], scale.unit = TRUE, ncp = 5, graph = FALSE)
+resPCA_lio <- PCA(Phenotype_clean_lio[,Var_ACP], scale.unit = TRUE, ncp = 5, graph = FALSE)
+resPCA_his <- PCA(Phenotype_clean_his[,Var_ACP], scale.unit = TRUE, ncp = 5, graph = FALSE)
+resPCA_vir <- PCA(Phenotype_clean_vir[,Var_ACP], scale.unit = TRUE, ncp = 5, graph = FALSE)
+resPCA_vau <- PCA(Phenotype_clean_vau[,Var_ACP], scale.unit = TRUE, ncp = 5, graph = FALSE)
+resPCA_car <- PCA(Phenotype_clean_car[,Var_ACP], scale.unit = TRUE, ncp = 5, graph = FALSE)
+
+# Showing the eigen values and percentage of variance explained of the PCA dimensions
+cat ("All Species")
+cat("\n")
+get_eigenvalue(resPCA_all)
+
+cat("\n")
+cat ("Guadarramae")
+cat("\n")
+get_eigenvalue(resPCA_gua)
+
+cat("\n")
+cat ("Lusitanicus")
+cat("\n")
+get_eigenvalue(resPCA_lus)
+
+cat("\n")
+cat ("Bocagei")
+cat("\n")
+get_eigenvalue(resPCA_boc)
+
+cat("\n")
+cat ("Liolepis")
+cat("\n")
+get_eigenvalue(resPCA_lio)
+
+cat("\n")
+cat ("Hispanicus")
+cat("\n")
+get_eigenvalue(resPCA_his)
+
+cat("\n")
+cat ("Virescens")
+cat("\n")
+get_eigenvalue(resPCA_vir)
+
+cat("\n")
+cat ("Vaucheri")
+cat("\n")
+get_eigenvalue(resPCA_vau)
+
+cat("\n")
+cat ("Carbonelli")
+cat("\n")
+get_eigenvalue(resPCA_car)
+
+```
+
+## Variables
+
+```{r}
+# Show the variable PCA
+variable_PCA("ALL",resPCA_all)
+variable_PCA("GUA",resPCA_gua)
+variable_PCA("LUS",resPCA_lus)
+variable_PCA("BOC",resPCA_boc)
+variable_PCA("LIO",resPCA_lio)
+variable_PCA("HIS",resPCA_his)
+variable_PCA("VIR",resPCA_vir)
+variable_PCA("VAU",resPCA_vau)
+variable_PCA("CAR",resPCA_car)
+
+```
+
+## Individual
+
+```{r}
+# Show the individual PCA
+individual_PCA("ALL",resPCA_all,Phenotype_clean_all)
+individual_PCA("GUA",resPCA_gua,Phenotype_clean_gua)
+individual_PCA("LUS",resPCA_lus,Phenotype_clean_lus)
+individual_PCA("BOC",resPCA_boc,Phenotype_clean_boc)
+individual_PCA("LIO",resPCA_lio,Phenotype_clean_lio)
+individual_PCA("HIS",resPCA_his,Phenotype_clean_his)
+individual_PCA("VIR",resPCA_vir,Phenotype_clean_vir)
+individual_PCA("VAU",resPCA_vau,Phenotype_clean_vau)
+individual_PCA("CAR",resPCA_car,Phenotype_clean_car)
+
+```
+
+## Phenotype
+
+```{r}
+# Show the individual PCA coloured and shaped by phenotype
+phenotype_PCA("ALL",resPCA_all,Phenotype_clean_all)
+phenotype_PCA("GUA",resPCA_gua,Phenotype_clean_gua)
+phenotype_PCA("LUS",resPCA_lus,Phenotype_clean_lus)
+phenotype_PCA("BOC",resPCA_boc,Phenotype_clean_boc)
+phenotype_PCA("LIO",resPCA_lio,Phenotype_clean_lio)
+phenotype_PCA("HIS",resPCA_his,Phenotype_clean_his)
+phenotype_PCA("VIR",resPCA_vir,Phenotype_clean_vir)
+phenotype_PCA("VAU",resPCA_vau,Phenotype_clean_vau)
+phenotype_PCA("CAR",resPCA_car,Phenotype_clean_car)
+
+```
+
+```{r}
+# Show the individual PCA coloured and shaped by extreme or intermediate phenotypes
+extreme_phenotype_PCA("ALL",resPCA_all,Phenotype_clean_all)
+extreme_phenotype_PCA("GUA",resPCA_gua,Phenotype_clean_gua)
+extreme_phenotype_PCA("LUS",resPCA_lus,Phenotype_clean_lus)
+extreme_phenotype_PCA("BOC",resPCA_boc,Phenotype_clean_boc)
+extreme_phenotype_PCA("LIO",resPCA_lio,Phenotype_clean_lio)
+extreme_phenotype_PCA("HIS",resPCA_his,Phenotype_clean_his)
+extreme_phenotype_PCA("VIR",resPCA_vir,Phenotype_clean_vir)
+extreme_phenotype_PCA("VAU",resPCA_vau,Phenotype_clean_vau)
+extreme_phenotype_PCA("CAR",resPCA_car,Phenotype_clean_car)
+
+```
+
+## Species
+
+```{r}
+# Show the PCA with all species, individuals coloured by species
+species_PCA("ALL",resPCA_all,Phenotype_clean_all)
+```
+
+# Distribution Modalities
+
+## Axe 1 Distribution
+
+```{r}
+# Show distribution along dimension of the PCA
+coords <- list(
+  ALL = resPCA_all$ind$coord[,1],
+  GUA = resPCA_gua$ind$coord[,1],
+  LUS = resPCA_lus$ind$coord[,1],
+  BOC = resPCA_boc$ind$coord[,1],
+  LIO = resPCA_lio$ind$coord[,1],
+  HIS = resPCA_his$ind$coord[,1],
+  VIR = resPCA_vir$ind$coord[,1],
+  VAU = resPCA_vau$ind$coord[,1],
+  CAR = resPCA_car$ind$coord[,1]
+)
+
+for(name in names(coords)) {
+  histogram_axe1(name,coords[[name]])
+}
+```
+
+## Multimode
+
+```{r, results='asis'}
+# Show the multimode tests
+
+L_M_multimode = c()
+for(name in names(coords)) {
+  cat("####", name, "\n\n")
+  mod = mod_multimod(limit_pval_multimode, coords[[name]])
+  print(mod)
+  L_M_multimode = c(L_M_multimode,mod)
+  cat("\n\n")
+}
+```
+
+## REBMIX
+
+```{r}
+# Show the REBMIX tests, and the individual clustering
+
+EM <- new("EM.Control", strategy = "exhaustive", variant = "ECM")
+L_C_REBMIX = c()
+
+cat("-------------------------------------------------------------------------------- \n ")
+cat ("All Species")
+cat("\n")
+c = mod_rebmix("ALL",coords[["ALL"]],resPCA_all,Phenotype_clean_all)
+print(paste("Component number :",c))
+L_C_REBMIX = c(L_C_REBMIX,c)
+
+cat("\n")
+cat("-------------------------------------------------------------------------------- \n")
+cat ("Guadarrame")
+cat("\n")
+c = mod_rebmix("GUA",coords[["GUA"]],resPCA_gua,Phenotype_clean_gua)
+print(paste("Component number :",c))
+L_C_REBMIX = c(L_C_REBMIX,c)
+
+cat("\n")
+cat("-------------------------------------------------------------------------------- \n")
+cat ("Lusitanicus")
+cat("\n")
+c = mod_rebmix("LUS",coords[["LUS"]],resPCA_lus,Phenotype_clean_lus)
+print(paste("Component number :",c))
+L_C_REBMIX = c(L_C_REBMIX,c)
+
+cat("\n")
+cat("-------------------------------------------------------------------------------- \n")
+cat ("Bocagei")
+cat("\n")
+c = mod_rebmix("BOC",coords[["BOC"]],resPCA_boc,Phenotype_clean_boc)
+print(paste("Component number :",c))
+L_C_REBMIX = c(L_C_REBMIX,c)
+
+cat("\n")
+cat("-------------------------------------------------------------------------------- \n")
+cat ("Liolepis")
+cat("\n")
+c = mod_rebmix("LIO",coords[["LIO"]],resPCA_lio,Phenotype_clean_lio)
+print(paste("Component number :",c))
+L_C_REBMIX = c(L_C_REBMIX,c)
+
+cat("\n")
+cat("-------------------------------------------------------------------------------- \n")
+cat ("Hispanicus")
+cat("\n")
+c = mod_rebmix("HIS",coords[["HIS"]],resPCA_his,Phenotype_clean_his)
+print(paste("Component number :",c))
+L_C_REBMIX = c(L_C_REBMIX,c)
+
+cat("\n")
+cat("-------------------------------------------------------------------------------- \n")
+cat ("Virescens")
+cat("\n")
+c = mod_rebmix("VIR",coords[["VIR"]],resPCA_vir,Phenotype_clean_vir)
+print(paste("Component number :",c))
+L_C_REBMIX = c(L_C_REBMIX,c)
+
+cat("\n")
+cat("-------------------------------------------------------------------------------- \n")
+cat ("Vaucheri")
+cat("\n")
+c = mod_rebmix("VAU",coords[["VAU"]],resPCA_vau,Phenotype_clean_vau)
+print(paste("Component number :",c))
+L_C_REBMIX = c(L_C_REBMIX,c)
+
+cat("\n")
+cat("-------------------------------------------------------------------------------- \n")
+cat ("Carbonelli")
+cat("\n")
+c = mod_rebmix("CAR",coords[["CAR"]],resPCA_car,Phenotype_clean_car)
+print(paste("Component number :",c))
+L_C_REBMIX = c(L_C_REBMIX,c)
+
+```
+
+## Performance
+
+```{r}
+# Show the performance tests
+
+for(name in names(coords)) {
+  cat("####", name, "\n\n")
+  print(mod_performance(coords[[name]]))
+  cat("\n\n")
+}
+
+```
+
+# Data Outputs
+
+## Final dataframe
+
+```{r}
+# Show the final table with results of all species
+
+L_P_C = list(Phenotype_clean_all,Phenotype_clean_gua,Phenotype_clean_lus,Phenotype_clean_boc,Phenotype_clean_lio,Phenotype_clean_his,Phenotype_clean_vir,Phenotype_clean_vau,Phenotype_clean_car)
+
+L_ACP = list(resPCA_all,resPCA_gua,resPCA_lus,resPCA_boc,resPCA_lio,
+             resPCA_his,resPCA_vir,resPCA_vau,resPCA_car)
+
+df_output <- data.frame(
+  Species     = c("All","guadarramae","lusitanicus","bocagei","liolepis",
+                  "hispanicus","virescens","vaucheri","carbonelli"),
+  N_tot       = sapply(L_P_C,nrow),
+  N_S         = sapply(L_P_C,count_pheno,"S"),
+  N_RB        = sapply(L_P_C,count_pheno,"RB"),
+  Dim1        = sapply(L_ACP,read_dimension,1),
+  Dim2        = sapply(L_ACP,read_dimension,2),
+  M_multimode = L_M_multimode,
+  C_REBMIX    = L_C_REBMIX
+)
+
+df_output
+
+table <- df_output |>
+  gt() |>
+  fmt_number(columns = c(Dim1, Dim2), decimals = 2) |>
+  cols_align(align = "center", everything()) |>
+  tab_options(
+    table.font.size = 14
+  )
+
+table
+gtsave(table, paste0(output_folder,"tableau_final.png"))
+
+```
