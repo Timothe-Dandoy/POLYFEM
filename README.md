@@ -6,7 +6,7 @@ Here is a manual that explain where all files used for the analyses can be found
 
   -  data: contains the reference genetic data used during the analysis, given by the NCBI database for P_Muralis. Contains also the file (Pheno.xlsx) with all pheotypic data measured from the femle lizards, and the file with the presence or absence of individuals to each experimentation. The sequence data are not given.
 
-  -  scripts: contains the scrips used for the analysis.
+  -  scripts: contains the scripts used for the analysis.
 
   -  figures: contains the figures found in the report
 
