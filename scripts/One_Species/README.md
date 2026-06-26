@@ -1,1 +1,1 @@
-Lunch the different scripts from the Main folder
+Launch the different scripts from the Main folder
