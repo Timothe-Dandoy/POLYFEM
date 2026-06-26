@@ -1,1 +1,2 @@
-
+Launch the scripts in order, and give the name of the species as an argument.
+Ex: P_guadarramae, P_lusitanicus, ...
