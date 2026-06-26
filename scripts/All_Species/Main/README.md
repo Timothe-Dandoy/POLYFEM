@@ -1,1 +1,1 @@
-Lunch the scripts in order
+Launch the scripts in order
